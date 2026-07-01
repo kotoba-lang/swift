@@ -29,6 +29,36 @@ ClojureScript / SCI / GraalVM.
 (swift/validate-bic "BAD")                  ; => {:swift/valid? false ...}
 ```
 
+## Operator console (UI/UX)
+
+A read-only HTML dashboard renders BIC validation and MT/ISO 20022 messages for an operator. Built on
+[`kotoba-lang/html`](https://github.com/kotoba-lang/html) (Hiccup→HTML) +
+[`kotoba-lang/css`](https://github.com/kotoba-lang/css) (EDN→CSS). Pure data
+→ markup; the console never exposes a write surface (no `<form>`/`<button>`)
+— writes stay behind the governor.
+
+```clojure
+(require '[kotoba.swift.ui :as ui])
+
+(ui/dashboard
+  {:bics ["DEUTDEFF500" "BAD"]
+   :messages [(swift/mt-message "103" "DEUTDEFF" {})]})
+;; => "<html>...read-only · governor-gated...</html>"
+```
+
+## Export (CSV / JSON)
+
+Audit-grade CSV (RFC-4180 quoting) and JSON (quote/backslash/newline
+escaped) for BIC validation and MT messages.
+
+```clojure
+(require '[kotoba.swift.export :as ex])
+
+(ex/bics->csv bics)        ; valid/country/bank
+(ex/messages->csv messages)
+(ex/bics->json bics)
+```
+
 ## Why
 
 A community bank operator must prove, before a message is committed, that the
