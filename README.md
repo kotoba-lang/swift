@@ -16,6 +16,17 @@ The library models **records, not wire format**. SWIFT MT on the wire uses
 without a parser. No network, no I/O — portable `.cljc` across JVM /
 ClojureScript / SCI / GraalVM.
 
+
+## Maturity
+
+| | |
+|---|---|
+| Role | capability |
+| Tests | 42 assertions, all green |
+| Operator console (UI/UX) | yes |
+| Export (CSV/JSON) | yes |
+| Shared CSS design system | yes (css.core/operator-theme) |
+
 ## Contract
 
 ```clojure
