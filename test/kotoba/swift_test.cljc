@@ -59,3 +59,21 @@
       (is (true? (:swift/valid? (swift/validate-mt-message m))))))
   (testing "rejects a non-map"
     (is (= :not-a-map (:swift/error (swift/validate-mt-message "x"))))))
+
+(deftest bic-edge-cases
+  (testing "8-char primary BIC is valid"
+    (is (swift/bic-valid? "DEUTDEFF")))
+  (testing "lowercase is rejected (BIC is upper-alnum)"
+    (is (not (swift/bic-valid? "deutdeff"))))
+  (testing "too short"
+    (is (not (swift/bic-valid? "DEUT"))))
+  (testing "non-string"
+    (is (not (swift/bic-valid? 42)))))
+
+(deftest mt-edge-cases
+  (testing "category 9 (cash management) is a known category"
+    (is (swift/mt-type-valid? "900")))
+  (testing "category 3 (not declared) is rejected"
+    (is (not (swift/mt-type-valid? "300"))))
+  (testing "missing namespace returns nil"
+    (is (nil? (swift/iso-20022-envelope "" "DEUTDEFF" "CHASUS33" {})))))
