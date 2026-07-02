@@ -70,6 +70,12 @@ escaped) for BIC validation and MT messages.
 (ex/bics->json bics)
 ```
 
+## Test
+
+```sh
+clojure -M:test
+```
+
 ## Why
 
 A community bank operator must prove, before a message is committed, that the
