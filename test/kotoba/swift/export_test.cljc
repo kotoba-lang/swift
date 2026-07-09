@@ -8,6 +8,17 @@
     (is (re-find #"bic,valid,country,bank,branch" csv))
     (is (re-find #"DEUTDEFF500,yes" csv))
     (is (re-find #"BAD,no" csv))))
+(deftest csv-export-quotes-a-bare-carriage-return
+  ;; RFC 4180 requires quoting a field containing CR, LF, or a comma --
+  ;; \r alone is also a line terminator every standard CSV reader
+  ;; recognizes, but the check here only ever covered \n. Verified
+  ;; against Python's csv module: an unquoted bare \r split the row into
+  ;; two corrupted rows on read-back. messages->csv reads its message
+  ;; map's fields directly without re-validating them.
+  (let [m [{:swift/mt (str "103" (char 13) "x") :swift/category "Customer"
+            :swift/sender {:swift/primary "SENDBIC"}}]
+        csv (ex/messages->csv m)]
+    (is (str/includes? csv "\"103\rx\""))))
 (deftest json-export
   (let [j (ex/bics->json ["DEUTDEFF500"])]
     (is (re-find #"\"bic\":\"DEUTDEFF500\"" j))
