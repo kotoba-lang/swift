@@ -1,10 +1,12 @@
 (ns kotoba.swift.export
   "Operator-facing export for an interbank-messaging actor.
 
-  Renders BIC validation results, MT messages and ISO 20022 envelopes to CSV
-  and JSON for compliance/audit export. Pure data → text: no network."
+  Renders BIC validation results, real-wire-format SWIFT MT messages and
+  real ISO 20022 XML documents to CSV and JSON for compliance/audit export.
+  Pure data → text: no network."
   (:require [clojure.string :as str]
-            [kotoba.swift :as swift]))
+            [kotoba.swift :as swift]
+            [kotoba.swift.iso20022 :as iso]))
 
 (defn- csv-cell [v]
   (let [s (str (if (nil? v) "" v))]
@@ -55,16 +57,6 @@
                         (or (:swift/bank p) "")
                         (or (:swift/branch p) "")]))))))
 
-(defn messages->csv [messages]
-  (str/join "\n"
-    (cons (csv-row ["mt" "valid" "category" "sender"])
-          (for [m messages]
-            (let [r (swift/validate-mt-message m)]
-              (csv-row [(or (:swift/mt m) "")
-                        (if (:swift/valid? r) "yes" "no")
-                        (or (:swift/category m) "")
-                        (or (get-in m [:swift/sender :swift/primary]) "")]))))))
-
 (defn bics->json [bics]
   (str "["
        (str/join ","
@@ -76,13 +68,70 @@
                           "\"bank\":\"" (json-str (:swift/bank p)) "\"}"))))
        "]"))
 
-(defn messages->json [messages]
+;; ---------------------------------------------------------------------------
+;; SWIFT MT messages — real-wire-format records (mt103 / mt202 / parse-mt-wire)
+;; ---------------------------------------------------------------------------
+
+(defn mt-messages->csv
+  "CSV export of MT message records, including the real wire string (RFC
+  4180-quoted; it contains embedded CRLF)."
+  [messages]
+  (str/join "\n"
+    (cons (csv-row ["mt" "valid" "sender" "receiver" "reference" "wire"])
+          (for [m messages]
+            (let [r (swift/validate-mt m)]
+              (csv-row [(or (get-in m [:swift/block-2 :swift/message-type]) "")
+                        (if (:swift/valid? r) "yes" "no")
+                        (or (get-in m [:swift/block-1 :swift/lt-address]) "")
+                        (or (get-in m [:swift/block-2 :swift/destination-address]) "")
+                        (or (swift/mt-field (:swift/block-4 m) "20") "")
+                        (swift/mt->wire m)]))))))
+
+(defn mt-messages->json
+  [messages]
   (str "["
        (str/join ","
                  (for [m messages]
-                   (let [r (swift/validate-mt-message m)]
-                     (str "{\"mt\":\"" (json-str (:swift/mt m)) "\","
+                   (let [r (swift/validate-mt m)]
+                     (str "{\"mt\":\"" (json-str (get-in m [:swift/block-2 :swift/message-type])) "\","
                           "\"valid\":" (if (:swift/valid? r) "true" "false") ","
-                          "\"category\":\"" (json-str (:swift/category m)) "\","
-                          "\"sender\":\"" (json-str (get-in m [:swift/sender :swift/primary])) "\"}"))))
+                          "\"sender\":\"" (json-str (get-in m [:swift/block-1 :swift/lt-address])) "\","
+                          "\"receiver\":\"" (json-str (get-in m [:swift/block-2 :swift/destination-address])) "\","
+                          "\"reference\":\"" (json-str (swift/mt-field (:swift/block-4 m) "20")) "\","
+                          "\"wire\":\"" (json-str (swift/mt->wire m)) "\"}"))))
+       "]"))
+
+;; ---------------------------------------------------------------------------
+;; ISO 20022 documents — real XML (pain001-doc / pacs008-doc / parse-xml)
+;; ---------------------------------------------------------------------------
+
+(defn iso20022-docs->csv
+  "CSV export of ISO 20022 documents, including the real generated XML
+  (RFC 4180-quoted; it contains embedded newlines)."
+  [docs]
+  (str/join "\n"
+    (cons (csv-row ["message-type" "valid" "msg-id" "xml"])
+          (for [d docs]
+            (let [r (iso/validate-iso20022 d)
+                  grp-hdr (or (some-> d (iso/xml-find :CstmrCdtTrfInitn) (iso/xml-find :GrpHdr))
+                              (some-> d (iso/xml-find :FIToFICstmrCdtTrf) (iso/xml-find :GrpHdr)))
+                  msg-id (some-> grp-hdr (iso/xml-find :MsgId) iso/xml-text)]
+              (csv-row [(or (:swift/message-type r) "")
+                        (if (:swift/valid? r) "yes" "no")
+                        (or msg-id "")
+                        (iso/xml->str d)]))))))
+
+(defn iso20022-docs->json
+  [docs]
+  (str "["
+       (str/join ","
+                 (for [d docs]
+                   (let [r (iso/validate-iso20022 d)
+                         grp-hdr (or (some-> d (iso/xml-find :CstmrCdtTrfInitn) (iso/xml-find :GrpHdr))
+                                     (some-> d (iso/xml-find :FIToFICstmrCdtTrf) (iso/xml-find :GrpHdr)))
+                         msg-id (some-> grp-hdr (iso/xml-find :MsgId) iso/xml-text)]
+                     (str "{\"messageType\":\"" (json-str (:swift/message-type r)) "\","
+                          "\"valid\":" (if (:swift/valid? r) "true" "false") ","
+                          "\"msgId\":\"" (json-str msg-id) "\","
+                          "\"xml\":\"" (json-str (iso/xml->str d)) "\"}"))))
        "]"))

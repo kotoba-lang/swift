@@ -1,6 +1,7 @@
 {:paths ["src"]
  :deps {io.github.kotoba-lang/html {:local/root "../html"}
-        io.github.kotoba-lang/css  {:local/root "../css"}}
+        io.github.kotoba-lang/css  {:local/root "../css"}
+        io.github.kotoba-lang/xml  {:local/root "../xml"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
