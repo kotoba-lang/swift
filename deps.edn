@@ -1,7 +1,10 @@
 {:paths ["src"]
- :deps {io.github.kotoba-lang/html {:local/root "../html"}
-        io.github.kotoba-lang/css  {:local/root "../css"}
-        io.github.kotoba-lang/xml  {:local/root "../xml"}}
+ :deps {io.github.kotoba-lang/html {:git/url "https://github.com/kotoba-lang/html.git"
+                                     :git/sha "aa57f2730c87b7c2752151ed1a5f2e402c2ac71e"}
+        io.github.kotoba-lang/css  {:git/url "https://github.com/kotoba-lang/css.git"
+                                     :git/sha "7fc8167c4fb97a92b7c21545e6a92a86cc58a9ca"}
+        io.github.kotoba-lang/xml  {:git/url "https://github.com/kotoba-lang/xml.git"
+                                     :git/sha "9d4284c733f3fad2b72dc43cd54123ad23fac0ab"}}
  :aliases
  {:test {:extra-paths ["test"]
          :extra-deps {io.github.cognitect-labs/test-runner
