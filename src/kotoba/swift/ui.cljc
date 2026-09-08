@@ -6,7 +6,7 @@
   shape), and real ISO 20022 XML documents, using kotoba-lang/html + css.
   Pure data → markup: no network. The governor gates dispatch; this view
   only observes."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [html.core :as html]
             [css.core :as css]
             [kotoba.swift :as swift]

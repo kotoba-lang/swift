@@ -4,7 +4,7 @@
   Renders BIC validation results, real-wire-format SWIFT MT messages and
   real ISO 20022 XML documents to CSV and JSON for compliance/audit export.
   Pure data → text: no network."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [kotoba.swift :as swift]
             [kotoba.swift.iso20022 :as iso]))
 
