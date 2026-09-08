@@ -21,7 +21,7 @@
   modeled. See README.md for the verified sources.
 
   Portable (.cljc) across JVM / ClojureScript / SCI / GraalVM."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [xml.core :as xmlc]
             [kotoba.swift :as swift]))
 

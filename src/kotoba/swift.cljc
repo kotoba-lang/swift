@@ -29,7 +29,7 @@
   ISO 20022 XML (pain.001 / pacs.008) lives in kotoba.swift.iso20022.
 
   Portable (.cljc) across JVM / ClojureScript / SCI / GraalVM."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 ;; ---------------------------------------------------------------------------
 ;; BIC — Bank Identifier Code (ISO 9362 / SWIFT-BIC)
@@ -321,7 +321,7 @@
         lines (if (seq inner) (str/split inner #"\r\n") [])]
     (reduce (fn [acc line]
               (if-let [[_ tag val] (re-matches #":([0-9]{2}[A-Za-z]?):(.*)" line)]
-                (conj acc {:swift/tag (str/upper-case tag) :swift/value val})
+                (conj acc {:swift/tag (str/upper tag) :swift/value val})
                 (if (seq acc)
                   (update acc (dec (count acc)) update :swift/value str "\n" line)
                   acc)))
@@ -545,7 +545,7 @@
         (let [bic-errors (for [{:swift/keys [tag value]} fields
                                 :when (contains? mt-bic-field-tags tag)
                                 :when (not (bic-valid? value))]
-                            (keyword (str "bad-field-" (str/lower-case tag))))
+                            (keyword (str "bad-field-" (str/lower tag))))
               type-errors
               (case mt
                 "103" (cond-> []

@@ -1,5 +1,5 @@
 (ns kotoba.swift.export-test
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]]
             [kotoba.swift :as swift]
             [kotoba.swift.iso20022 :as iso]
