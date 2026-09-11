@@ -176,7 +176,7 @@ and ISO 20022 documents (including the real generated XML).
 ## Test
 
 ```sh
-clojure -M:test
+kbb -M:test
 ```
 
 ## Why
