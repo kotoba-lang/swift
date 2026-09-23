@@ -1,6 +1,6 @@
 (ns kotoba.swift-test
   (:require [kotoba.lang.text :as str]
-            [clojure.test :refer [deftest is testing]]
+            [kotoba.test :refer [deftest is testing]]
             [kotoba.swift :as swift]))
 
 ;; ---------------------------------------------------------------------------
