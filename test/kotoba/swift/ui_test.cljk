@@ -1,5 +1,5 @@
 (ns kotoba.swift.ui-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [kotoba.swift :as swift]
             [kotoba.swift.iso20022 :as iso]
             [kotoba.swift.ui :as ui]))
